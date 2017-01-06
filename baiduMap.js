@@ -15,19 +15,26 @@ var allMapFunc = {
 		//marker 的图形对象
 		markerIcon: null,
 
-		//图上显示的 marker 的集合
+		//图上显示的不可拖拽标注的集合
 		markerCollection: [],
+		//图上显示的可拖拽标注的集合
 		dragMarkerCollection: [],
-
+		//图上显示的连线的集合
+		polyLineCollection: [],
 		//主操作函数
 		main: function () {
 			//初始化地图
 			this.map = new BMap.Map("container");
 			var point = new BMap.Point(119.976, 30.544);
-			this.map.centerAndZoom(point, 18);
+			this.map.centerAndZoom(point, 17);
+			//this.map.setDefaultCursor("url('01.cur')");        //设置地图默认的鼠标指针样式   
+        	//this.map.setDraggingCursor("url('03.cur')");         //设置地图拖拽时的鼠标指针样式  
 
 			//添加控件
 			this.addControl();
+
+			//添加右键菜单
+			this.addContextMenu(this.map);
 
 			//添加标注
 			this.addMarker({
@@ -36,12 +43,13 @@ var allMapFunc = {
 				drag: true,
 			});
 
-			
+			var line = [new BMap.Point(119.976, 30.544), new BMap.Point(120, 31), new BMap.Point(121, 30), new BMap.Point(122, 33),]
+			this.addPolyLine(line);
 		},
 
 		//添加控件
 		addControl: function () {
-			//支持鼠标拖动
+			//支持鼠标滚轮缩放
 			this.map.enableScrollWheelZoom();
 			//平移地图控件
 			this.map.addControl(new BMap.NavigationControl());
@@ -63,8 +71,29 @@ var allMapFunc = {
 			//this.map.addControl(new BMap.GeolocationControl(geoOpts));
 		},
 
+		//添加右键菜单
+		addContextMenu: function (map) {
+			var contextMenu = new BMap.ContextMenu();
+			contextMenu.addItem(new BMap.MenuItem(("显示坐标"), this.showLocation.bind(this)));
+			contextMenu.addSeparator();  //添加右键菜单的分割线  
+			contextMenu.addItem(new BMap.MenuItem(("显示坐标"), this.showLocation.bind(this)));
+			contextMenu.addSeparator();
+			contextMenu.addItem(new BMap.MenuItem(("显示坐标"), this.showLocation.bind(this)));
+			contextMenu.addSeparator();
+			//menu.addSeparator(); 
+			map.addContextMenu(contextMenu);
+		},
+
+		//右击显示地图坐标位置
+		showLocation: function (e) {
+			var lat = e.lat || 0;
+			var lng = e.lng || 0;
+			var pointer = new BMap.Point(lng, lat);
+			this.openInfoWindow(pointer, ('(' + lng + ',' + lat + ')'), 'location', 220 ,60);
+		},
+
 		/*添加标注
-			参数：
+			参数 param：
 			* x 经度 num
 			* y 纬度 num
 			* img 标注图片路径 string
@@ -105,10 +134,19 @@ var allMapFunc = {
 			}
 		},
 
-		//删除指定标注
-		removeMarker: function(marker) {
-			this.map.removeOverlay(marker);
-			marker.dispose();
+		/*绘制折线
+			* pointer 连接点的坐标 Array(BMap.Point)
+		*/
+		addPolyLine: function (pointer) {
+			var polyline = new BMap.Polyline(pointer,{strokeColor:"rgb(255,0,0)", strokeWeight:6, strokeOpacity:0.9});
+			this.map.addOverlay(polyline);
+			this.polyLineCollection.push(polyline);
+		},
+
+		//删除指定覆盖物
+		removeMarker: function(Element) {
+			this.map.removeOverlay(Element);
+			Element.dispose();
 		},
 
 		//删除所有覆盖物
@@ -120,16 +158,18 @@ var allMapFunc = {
 			* info 显示信息 string
 			* title 文本标题 string
 		*/
-		openInfWindow: function (pointer, info, title) {
+		openInfoWindow: function (pointer, info, title, boxWidth, boxHeight) {
+			var boxWidth = boxWidth || 220;
+			var boxHeight = boxHeight || 60;
+			var title = title || '';
 			var opts = {
-				width: 250,
-				height: 100,
-				title: 'Hello'
+				width: boxWidth,
+				height: boxHeight,
+				title: title
 			};
 			var infoWindow = new BMap.InfoWindow(info, opts);
 			this.map.openInfoWindow(infoWindow, pointer);
 		},
-
-
 		
 }
+
