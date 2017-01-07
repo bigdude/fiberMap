@@ -23,6 +23,10 @@ var allMapFunc = {
 		polyLineCollection: [],
 		//主操作函数
 		main: function () {
+			this.initMap();
+		},
+
+		initMap: function () {
 			//初始化地图
 			this.map = new BMap.Map("container");
 			var point = new BMap.Point(119.976, 30.544);
@@ -45,6 +49,7 @@ var allMapFunc = {
 
 			var line = [new BMap.Point(119.976, 30.544), new BMap.Point(120, 31), new BMap.Point(121, 30), new BMap.Point(122, 33),]
 			this.addPolyLine(line);
+
 		},
 
 		//添加控件
@@ -56,7 +61,7 @@ var allMapFunc = {
 			//缩略地图控件
 			this.map.addControl(new BMap.OverviewMapControl());
 			//比例尺控件
-			var scaleOpts = {offset: new BMap.Size(50, 50)}    
+			var scaleOpts = {offset: new BMap.Size(90, 40)};    
 			this.map.addControl(new BMap.ScaleControl(scaleOpts));
 			//地图类型控件
 			this.map.addControl(new BMap.MapTypeControl());
@@ -122,6 +127,8 @@ var allMapFunc = {
 				var marker = new BMap.Marker(point);
 			}
 			this.map.addOverlay(marker);
+			//点击marker显示坐标值
+			marker.addEventListener('click', this.showMarkerInfo);
 
 			if(ifDrag) {
 				marker.enableDragging();
@@ -132,6 +139,19 @@ var allMapFunc = {
 			} else {
 				this.markerCollection.push(marker);
 			}
+		},
+
+		showMarkerInfo: function (e) {
+			var lat = e.target.wm.lat || 0;
+			var lng = e.target.wm.lng || 0;
+			var opts = {
+				width: 220,
+				height: 60,
+				title: '坐标'
+			};
+			var pointer = new BMap.Point(lng, lat);
+			var infoWindow = new BMap.InfoWindow('(' + lng + ',' + lat + ')', opts);
+			this.map.openInfoWindow(infoWindow, pointer);
 		},
 
 		/*绘制折线
