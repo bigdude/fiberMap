@@ -44,13 +44,13 @@ var allMapFunc = {
 			//地图添加右键菜单
 			this.addMapContextMenu(this.map);
 
-			//添加标注
+			//添加标注	
 			this.addMarker({
 				x: 119.976, 
 				y: 30.544,
 				drag: true,
 			});
-
+				
 			var line = [new BMap.Point(119.976, 30.544), new BMap.Point(120, 31), new BMap.Point(121, 30), new BMap.Point(122, 33),]
 			this.addPolyLine(line);
 
@@ -74,10 +74,10 @@ var allMapFunc = {
 			//this.map.addControl(CopyrightControl.addCopyright(this.copyright));
 			
 			//定位控件
-			//var geoOpts = {
-			//	anchor: BMAP_ANCHOR_BOTTOM_RIGHT,
-			//	offset: new BMap.Size(50, 50)};
-			//this.map.addControl(new BMap.GeolocationControl(geoOpts));
+			// var geoOpts = {
+			// 	anchor: BMAP_ANCHOR_BOTTOM_RIGHT,
+			// 	offset: new BMap.Size(50, 50)};
+			// this.map.addControl(new BMap.GeolocationControl(geoOpts));
 
 			//显示经纬度
 			this.addLocationIcon();
@@ -135,6 +135,8 @@ var allMapFunc = {
 		//添加地图右键菜单
 		addMapContextMenu: function (map) {
 			var contextMenu = new BMap.ContextMenu();
+			contextMenu.addItem(new BMap.MenuItem(("添加标识"), this.addMarkerOnMap.bind(this)));
+			contextMenu.addSeparator();
 			contextMenu.addItem(new BMap.MenuItem(("显示坐标"), this.showLocation.bind(this)));
 			contextMenu.addSeparator();  //添加右键菜单的分割线  
 			contextMenu.addItem(new BMap.MenuItem(("开始画线"), this.showLocation.bind(this)));
@@ -142,6 +144,17 @@ var allMapFunc = {
 			contextMenu.addSeparator();
 			//menu.addSeparator(); 
 			map.addContextMenu(contextMenu);
+		},
+
+		//右键添加masker
+		addMarkerOnMap: function (e) {
+			var lat = e.lat;
+			var lng = e.lng;
+			this.addMarker({
+				x: lng, 
+				y: lat,
+				drag: false,
+			});
 		},
 
 		//右击显示地图坐标位置
@@ -194,7 +207,6 @@ var allMapFunc = {
 			var ifDrag = param.drag || false;
 			var width = param.width || 23;
 			var height = param.height || 25;
-			var markerIcon = this.markerIcon;
 			var point = new BMap.Point(x, y);
 			if(param.img) {
 				var markerIcon = new BMap.Icon(param.img, new BMap.Size(width, height),{
@@ -210,6 +222,7 @@ var allMapFunc = {
 			this.map.addOverlay(marker);
 			//点击marker显示坐标值
 			marker.addEventListener('click', this.showMarkerInfo);
+
 			//添加marker右键菜单
 			this.addMarkerContextMenu(marker);
 
@@ -231,7 +244,7 @@ var allMapFunc = {
 			var contextMenu = new BMap.ContextMenu();
 			contextMenu.addItem(new BMap.MenuItem(("查看坐标"), this.showLocation.bind(this)));
 			contextMenu.addSeparator();  //添加右键菜单的分割线  
-			contextMenu.addItem(new BMap.MenuItem(("删除"), this.removeMarker.bind(marker)));
+			contextMenu.addItem(new BMap.MenuItem(("删除"), this.removeMarker.bind(this)));
 			//menu.addSeparator(); 
 			marker.addContextMenu(contextMenu);
 		},
@@ -259,16 +272,16 @@ var allMapFunc = {
 		},
 
 		//删除指定覆盖物
-		removeMarker: function(e) {
-			var map = allMapFunc.map;
-			var markerCollection = allMapFunc.markerCollection;
-			var dragMarkerCollection = allMapFunc.dragMarkerCollection;
-			map.removeOverlay(this);
-			if(this.ifDrag){
-				var index = dragMarkerCollection.indexOf(this, dragMarkerCollection.length-1);
+		removeMarker: function(e,ee,marker) {
+			var map = this.map;
+			var markerCollection = this.markerCollection;
+			var dragMarkerCollection = this.dragMarkerCollection;
+			map.removeOverlay(marker);
+			if(marker.ifDrag){
+				var index = dragMarkerCollection.indexOf(marker, dragMarkerCollection.length-1);
 				dragMarkerCollection.splice(index,1);
 			} else {
-				var index = markerCollection.indexOf(this, markerCollection.length-1);
+				var index = markerCollection.indexOf(marker, markerCollection.length-1);
 				markerCollection.splice(index,1);
 			}
 		},
