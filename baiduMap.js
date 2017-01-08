@@ -137,9 +137,8 @@ var allMapFunc = {
 			var contextMenu = new BMap.ContextMenu();
 			contextMenu.addItem(new BMap.MenuItem(("显示坐标"), this.showLocation.bind(this)));
 			contextMenu.addSeparator();  //添加右键菜单的分割线  
-			contextMenu.addItem(new BMap.MenuItem(("显示坐标"), this.showLocation.bind(this)));
-			contextMenu.addSeparator();
-			contextMenu.addItem(new BMap.MenuItem(("显示坐标"), this.showLocation.bind(this)));
+			contextMenu.addItem(new BMap.MenuItem(("开始画线"), this.showLocation.bind(this)));
+			contextMenu.addItem(new BMap.MenuItem(("画线"), this.showLocation.bind(this)));
 			contextMenu.addSeparator();
 			//menu.addSeparator(); 
 			map.addContextMenu(contextMenu);
@@ -177,6 +176,8 @@ var allMapFunc = {
 			} 
 		},
 
+
+
 		/*添加标注
 			参数 param：
 			* x 经度 num
@@ -209,16 +210,30 @@ var allMapFunc = {
 			this.map.addOverlay(marker);
 			//点击marker显示坐标值
 			marker.addEventListener('click', this.showMarkerInfo);
+			//添加marker右键菜单
+			this.addMarkerContextMenu(marker);
 
 			if(ifDrag) {
 				marker.enableDragging();
+				marker.ifDrag = true;
 				if(param.dragFunc) {    
 					marker.addEventListener("dragend", param.dragFunc);
 				}
 				this.dragMarkerCollection.push(marker);
 			} else {
+				marker.ifDrag = false;
 				this.markerCollection.push(marker);
 			}
+		},
+
+		//添加marker右键菜单
+		addMarkerContextMenu: function (marker) {
+			var contextMenu = new BMap.ContextMenu();
+			contextMenu.addItem(new BMap.MenuItem(("查看坐标"), this.showLocation.bind(this)));
+			contextMenu.addSeparator();  //添加右键菜单的分割线  
+			contextMenu.addItem(new BMap.MenuItem(("删除"), this.removeMarker.bind(marker)));
+			//menu.addSeparator(); 
+			marker.addContextMenu(contextMenu);
 		},
 
 		showMarkerInfo: function (e) {
@@ -244,9 +259,18 @@ var allMapFunc = {
 		},
 
 		//删除指定覆盖物
-		removeMarker: function(Element) {
-			this.map.removeOverlay(Element);
-			Element.dispose();
+		removeMarker: function(e) {
+			var map = allMapFunc.map;
+			var markerCollection = allMapFunc.markerCollection;
+			var dragMarkerCollection = allMapFunc.dragMarkerCollection;
+			map.removeOverlay(this);
+			if(this.ifDrag){
+				var index = dragMarkerCollection.indexOf(this, dragMarkerCollection.length-1);
+				dragMarkerCollection.splice(index,1);
+			} else {
+				var index = markerCollection.indexOf(this, markerCollection.length-1);
+				markerCollection.splice(index,1);
+			}
 		},
 
 		//删除所有覆盖物
