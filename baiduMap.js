@@ -15,6 +15,10 @@ var allMapFunc = {
 		//marker 的图形对象
 		markerIcon: null,
 
+		//移动鼠标是否显示L经纬度
+		ifShowLoLabel: false,
+		//移动鼠标显示经纬度的标签
+		LocationLabel: null,
 		//图上显示的不可拖拽标注的集合
 		markerCollection: [],
 		//图上显示的可拖拽标注的集合
@@ -37,8 +41,8 @@ var allMapFunc = {
 			//添加控件
 			this.addControl();
 
-			//添加右键菜单
-			this.addContextMenu(this.map);
+			//地图添加右键菜单
+			this.addMapContextMenu(this.map);
 
 			//添加标注
 			this.addMarker({
@@ -74,10 +78,62 @@ var allMapFunc = {
 			//	anchor: BMAP_ANCHOR_BOTTOM_RIGHT,
 			//	offset: new BMap.Size(50, 50)};
 			//this.map.addControl(new BMap.GeolocationControl(geoOpts));
+
+			//显示经纬度
+			this.addLocationIcon();
 		},
 
-		//添加右键菜单
-		addContextMenu: function (map) {
+		//自定义显示经纬度控件
+		addLocationIcon: function () {
+			var This = this;
+			function ZoomControl() {
+				this.defaultAnchor = BMAP_ANCHOR_BOTTOM_LEFT;    
+    			this.defaultOffset = new BMap.Size(30, 30);    
+			}
+			ZoomControl.prototype = new BMap.Control();
+			ZoomControl.prototype.initialize = function(map){    
+				// 创建一个DOM元素   
+				 var div = document.createElement("div");
+				 var img = new Image();
+				 img.src = "./images/locationIcon.png";
+				 div.appendChild(img);         
+				 // 设置样式
+				 img.style.display = "block";
+				 img.style.position = "relative";
+				 img.style.width = "25px";
+				 img.style.height = "50px";
+				 img.style.top = "0px";
+				 div.style.width = "25px";
+				 div.style.height = "25px";
+				 div.style.boxShadow = "rgba(0,0,0,0.34902) 2px 2px 3px";
+				 div.style.overflow = "hidden"; 
+				 div.style.cursor = "pointer";    
+				 div.style.border = "1px solid gray";
+				 div.style.borderRadius = "4px";    
+				 div.style.backgroundColor = "rgb(255,255,255)";    
+				 // 绑定事件，点击一次放大两级    
+				 div.onclick = function(e){  
+				 	if(This.ifShowLoLabel) {
+				 		img.style.top = "0px";
+				 		This.ifShowLoLabel = false;
+				 		This.alwaysShowLocation();
+				 	} else {
+				 		img.style.top = "-25px";
+				 		This.ifShowLoLabel = true;
+				 		This.alwaysShowLocation();
+				 	}
+				 }; 
+				 // 添加DOM元素到地图中   
+				 map.getContainer().appendChild(div);    
+				 // 将DOM元素返回  
+				 return div;    
+			}
+			var showIcon = new ZoomControl();
+			this.map.addControl(showIcon);
+		},
+
+		//添加地图右键菜单
+		addMapContextMenu: function (map) {
 			var contextMenu = new BMap.ContextMenu();
 			contextMenu.addItem(new BMap.MenuItem(("显示坐标"), this.showLocation.bind(this)));
 			contextMenu.addSeparator();  //添加右键菜单的分割线  
@@ -95,6 +151,30 @@ var allMapFunc = {
 			var lng = e.lng || 0;
 			var pointer = new BMap.Point(lng, lat);
 			this.openInfoWindow(pointer, ('(' + lng + ',' + lat + ')'), 'location', 220 ,60);
+		},
+
+		//鼠标上添加显示坐标标签
+		alwaysShowLocation: function (show) {
+			var This = this;
+			this.map.removeOverlay(This.LocationLabel);
+			this.LocationLabel = new BMap.Label("");
+			this.LocationLabel.setStyle({color: "black", border: "1px solid black"});
+			this.LocationLabel.setOffset(new BMap.Size(-10,-20));
+			this.map.addOverlay(this.LocationLabel);
+			showFun = function(e) {
+				var lng = e.point.lng;
+				var lat = e.point.lat;
+				var showStr = lng + ',' + lat;
+				This.LocationLabel.setPosition(new BMap.Point(lng, lat));
+				This.LocationLabel.setContent(showStr);
+				if(!This.ifShowLoLabel){
+					This.map.removeOverlay(This.LocationLabel);
+					This.map.removeEventListener('mousemove', showFun);
+				}
+			}
+			if(this.ifShowLoLabel) {
+				this.map.addEventListener('mousemove', showFun);
+			} 
 		},
 
 		/*添加标注
@@ -172,6 +252,7 @@ var allMapFunc = {
 		//删除所有覆盖物
 		removeAllOverLay: function () {
 			clearOverlays();
+
 		},
 		/*信息窗口
 			* pointer 地图坐标对象 new BMap.Point(x, y)
