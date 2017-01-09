@@ -58,6 +58,8 @@ var allMapFunc = {
 
 		//添加控件
 		addControl: function () {
+			//启用地图惯性拖拽，默认禁用
+			this.map.enableContinuousZoom();
 			//支持鼠标滚轮缩放
 			this.map.enableScrollWheelZoom();
 			//平移地图控件
@@ -220,11 +222,12 @@ var allMapFunc = {
 				var marker = new BMap.Marker(point);
 			}
 			this.map.addOverlay(marker);
-			//点击marker显示坐标值
-			marker.addEventListener('click', this.showMarkerInfo);
 
 			//添加marker右键菜单
 			this.addMarkerContextMenu(marker);
+
+			//点击marker显示坐标值
+			marker.addEventListener('click', this.showMarkerInfo);
 
 			if(ifDrag) {
 				marker.enableDragging();
