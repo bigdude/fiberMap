@@ -45,15 +45,17 @@ var allMapFunc = {
 			this.addMapContextMenu(this.map);
 
 			//添加标注	
-			this.addMarker({
-				x: 119.976, 
-				y: 30.544,
-				drag: true,
-			});
+			// this.addMarker({
+			// 	x: 119.976, 
+			// 	y: 30.544,
+			// 	drag: true,
+			// });
 				
-			var line = [new BMap.Point(119.976, 30.544), new BMap.Point(120, 31), new BMap.Point(121, 30), new BMap.Point(122, 33),]
-			this.addPolyLine(line);
+			//var line = [new BMap.Point(119.976, 30.544), new BMap.Point(120, 31), new BMap.Point(121, 30), new BMap.Point(122, 33),]
+			//this.addPolyLine(line);
 
+			//this.markerCollection = [new BMap.Point(119.976, 30.544), new BMap.Point(120, 31), new BMap.Point(121, 30), new BMap.Point(122, 33),];
+			//this.drawLine();
 		},
 
 		//添加控件
@@ -163,11 +165,13 @@ var allMapFunc = {
 			contextMenu.addSeparator();
 			contextMenu.addItem(new BMap.MenuItem(("显示坐标"), this.showLocation.bind(this)));
 			contextMenu.addSeparator();  //添加右键菜单的分割线  
-			contextMenu.addItem(new BMap.MenuItem(("开始画线"), this.removeAllOverLay.bind(this)));
-			contextMenu.addItem(new BMap.MenuItem(("画线"), this.showLocation.bind(this)));
+			contextMenu.addItem(new BMap.MenuItem(("开始画线"), this.initOverlay.bind(this)));
+			contextMenu.addItem(new BMap.MenuItem(("画线"), this.drawLine.bind(this)));
 			contextMenu.addSeparator();
 			contextMenu.addItem(new BMap.MenuItem(("鼠标测距"), this.distanceTool.bind(this)));
-			//menu.addSeparator(); 
+			contextMenu.addSeparator(); 
+			contextMenu.addItem(new BMap.MenuItem(("清空标记"), this.removeAllOverLay.bind(this)));
+			//menu.addSeparator();
 			map.addContextMenu(contextMenu);
 		},
 
@@ -261,6 +265,22 @@ var allMapFunc = {
 			this.map.openInfoWindow(infoWindow, pointer);
 		},
 
+		//地图右键链接marker 即画线
+		drawLine: function (e) {
+			var markerArray = [];
+			var len = this.markerCollection.length;
+			if(len === 0) return false;
+			var lng = 0;
+			var lat = 0;
+			for(var i=0; i<len; i++) {
+				lng = this.markerCollection[i].getPosition().lng;
+				lat = this.markerCollection[i].getPosition().lat;
+				markerArray.push(new BMap.Point(lng, lat));
+			}
+			//画线
+			this.addPolyLine(markerArray);
+		},
+
 		distanceTool: function (e,ee,label) {
 			var myDis = new BMapLib.DistanceTool(this.map);
 				myDis.open();
@@ -289,6 +309,15 @@ var allMapFunc = {
 				var index = markerCollection.indexOf(marker, markerCollection.length-1);
 				markerCollection.splice(index,1);
 			}
+		},
+		//用于继续画线
+		initOverlay: function () {
+			var marker = this.markerCollection[this.markerCollection.length -1];
+			var dragMarker = this.dragMarkerCollection[this.dragMarkerCollection.length -1];
+			this.markerCollection = [];
+			this.markerCollection.push(marker);
+			this.dragMarkerCollection = [];
+			this.dragMarkerCollection.push(dragMarker);
 		},
 
 		//删除所有覆盖物
