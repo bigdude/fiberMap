@@ -132,39 +132,6 @@ var allMapFunc = {
 			this.map.addControl(showIcon);
 		},
 
-		//添加地图右键菜单
-		addMapContextMenu: function (map) {
-			var contextMenu = new BMap.ContextMenu();
-			contextMenu.addItem(new BMap.MenuItem(("添加标识"), this.addMarkerOnMap.bind(this)));
-			contextMenu.addSeparator();
-			contextMenu.addItem(new BMap.MenuItem(("显示坐标"), this.showLocation.bind(this)));
-			contextMenu.addSeparator();  //添加右键菜单的分割线  
-			contextMenu.addItem(new BMap.MenuItem(("开始画线"), this.showLocation.bind(this)));
-			contextMenu.addItem(new BMap.MenuItem(("画线"), this.showLocation.bind(this)));
-			contextMenu.addSeparator();
-			//menu.addSeparator(); 
-			map.addContextMenu(contextMenu);
-		},
-
-		//右键添加masker
-		addMarkerOnMap: function (e) {
-			var lat = e.lat;
-			var lng = e.lng;
-			this.addMarker({
-				x: lng, 
-				y: lat,
-				drag: false,
-			});
-		},
-
-		//右击显示地图坐标位置
-		showLocation: function (e) {
-			var lat = e.lat || 0;
-			var lng = e.lng || 0;
-			var pointer = new BMap.Point(lng, lat);
-			this.openInfoWindow(pointer, ('(' + lng + ',' + lat + ')'), 'location', 220 ,60);
-		},
-
 		//鼠标上添加显示坐标标签
 		alwaysShowLocation: function (show) {
 			var This = this;
@@ -189,7 +156,39 @@ var allMapFunc = {
 			} 
 		},
 
+		//添加地图右键菜单
+		addMapContextMenu: function (map) {
+			var contextMenu = new BMap.ContextMenu();
+			contextMenu.addItem(new BMap.MenuItem(("添加标识"), this.addMarkerOnMap.bind(this)));
+			contextMenu.addSeparator();
+			contextMenu.addItem(new BMap.MenuItem(("显示坐标"), this.showLocation.bind(this)));
+			contextMenu.addSeparator();  //添加右键菜单的分割线  
+			contextMenu.addItem(new BMap.MenuItem(("开始画线"), this.removeAllOverLay.bind(this)));
+			contextMenu.addItem(new BMap.MenuItem(("画线"), this.showLocation.bind(this)));
+			contextMenu.addSeparator();
+			contextMenu.addItem(new BMap.MenuItem(("鼠标测距"), this.distanceTool.bind(this)));
+			//menu.addSeparator(); 
+			map.addContextMenu(contextMenu);
+		},
 
+		//右键添加masker
+		addMarkerOnMap: function (e) {
+			var lat = e.lat;
+			var lng = e.lng;
+			this.addMarker({
+				x: lng, 
+				y: lat,
+				drag: false,
+			});
+		},
+
+		//右击显示地图坐标位置
+		showLocation: function (e) {
+			var lat = e.lat || 0;
+			var lng = e.lng || 0;
+			var pointer = new BMap.Point(lng, lat);
+			this.openInfoWindow(pointer, ('(' + lng + ',' + lat + ')'), 'location', 220 ,60);
+		},
 
 		/*添加标注
 			参数 param：
@@ -262,6 +261,12 @@ var allMapFunc = {
 			this.map.openInfoWindow(infoWindow, pointer);
 		},
 
+		distanceTool: function (e,ee,label) {
+			var myDis = new BMapLib.DistanceTool(this.map);
+				myDis.open();
+				//myDis.close();
+		},
+
 		/*绘制折线
 			* pointer 连接点的坐标 Array(BMap.Point)
 		*/
@@ -288,8 +293,10 @@ var allMapFunc = {
 
 		//删除所有覆盖物
 		removeAllOverLay: function () {
-			clearOverlays();
-
+			this.map.clearOverlays();
+			this.markerCollection = [];
+			this.dragMarkerCollection = [];
+			this.polyLineCollection = [];
 		},
 		/*信息窗口
 			* pointer 地图坐标对象 new BMap.Point(x, y)
