@@ -317,10 +317,14 @@ var allMapFunc = {
 		initOverlay: function () {
 			var marker = this.markerCollection[this.markerCollection.length -1];
 			var dragMarker = this.dragMarkerCollection[this.dragMarkerCollection.length -1];
+			var marlen = this.markerCollection.length;
+			var dralen = this.dragMarkerCollection.length;
 			this.markerCollection = [];
-			this.markerCollection.push(marker);
 			this.dragMarkerCollection = [];
-			this.dragMarkerCollection.push(dragMarker);
+			if(marlen !==0 || fralen!==0){
+				this.markerCollection.push(marker);
+				this.dragMarkerCollection.push(dragMarker);
+			}
 		},
 
 		//删除所有覆盖物
